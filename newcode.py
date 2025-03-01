@@ -48,7 +48,7 @@ if uploaded_file is not None:
     os.makedirs("uploaded_images", exist_ok=True)
     with open(image_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
-    st.image(image_path, caption="ตัวอย่างเค้ก", use_column_width=True)
+    st.image(image_path, caption="ตัวอย่างเค้ก", use_container_width=True)
 
 # Selecting candle
 candle_type = st.radio("เทียน (แท่งละ 10 บาท):", ["เทียนเกลียว", "เทียนสั้นสีชมพู", "ไม่รับเทียน"])
