@@ -151,7 +151,7 @@ if st.button("ยืนยันออเดอร์"):
             st.write(order_summary)
 
             if image_path:
-                st.image(image_path, caption="ตัวอย่างเค้ก", use_column_width=True)
+                st.image(image_path, caption="ตัวอย่างเค้ก", use_container_width=True)
 
         except Exception as e:
             st.error(f"⚠️ Error saving order: {e}")
