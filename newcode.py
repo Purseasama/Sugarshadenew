@@ -79,11 +79,94 @@ customer_name = st.text_input("💌 ชื่อลูกค้า", placeholder
 phone_number = st.text_input("📞 เบอร์โทรศัพท์", max_chars=15, placeholder=" XXX-XXX-XXXX")
 order_channel = st.radio("📲 ช่องทางสั่ง", ["Line", "Facebook", "Instagram"], horizontal=True)
 
-# Cake Type Selection
-st.markdown("<div class='box'><span class='title'>🎂 ประเภทเค้ก</span></div>", unsafe_allow_html=True)
-cake_type = st.radio("กรุณาเลือกประเภทเค้ก", ["เค้กปอนด์ 🎂", "เค้กชิ้น 🍰"], horizontal=True)
+# Initialize cake_type in session state
+if "cake_type" not in st.session_state:
+    st.session_state.cake_type = None
 
-if cake_type == "เค้กปอนด์ 🎂":
+# Apply CSS styling for big buttons
+st.markdown(
+    """
+    <style>
+        .cake-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        .cake-option {
+            background-color: white;
+            border: 3px solid #A48DFF;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .cake-option:hover {
+            background-color: #A48DFF;
+            color: white;
+        }
+        .cake-selected {
+            background-color: #A48DFF !important;
+            color: black !important;
+            border: 3px solid #A48DFF;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Cake Type Selection Header
+st.markdown("<div class='box'><span class='title'>🎂 ประเภทเค้ก</span></div>", unsafe_allow_html=True)
+
+# Create layout with two big buttons
+col1, col2 = st.columns(2)
+
+# Function to update selection
+def select_cake(cake):
+    st.session_state.cake_type = cake
+
+# Display big buttons for selection
+with col1:
+    if st.button(
+        "🎂 เค้กปอนด์",
+        key="pound_cake",
+        use_container_width=True,
+    ):
+        select_cake("เค้กปอนด์ 🎂")
+
+with col2:
+    if st.button(
+        "🍰 เค้กชิ้น",
+        key="slice_cake",
+        use_container_width=True,
+    ):
+        select_cake("เค้กชิ้น 🍰")
+
+# Apply JavaScript for dynamic styling
+if st.session_state.cake_type:
+    selected_cake = st.session_state.cake_type
+    st.markdown(
+        f"""
+        <script>
+            var buttons = window.parent.document.querySelectorAll('button');
+            buttons.forEach(btn => {{
+                if (btn.innerText.includes('{selected_cake}')) {{
+                    btn.style.backgroundColor = '#A48DFF';
+                    btn.style.color = 'black';
+                }}
+            }});
+        </script>
+        """,
+        unsafe_allow_html=True,
+    )
+
+# 🔹 Display the next section based on selection
+if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     st.markdown("<div class='box'><span class='title'>🎂 เค้กปอนด์</span></div>", unsafe_allow_html=True)
     cake_base = st.selectbox("เนื้อเค้ก:", ["วานิลลา", "ช็อคโกแลต"])
     cake_filling = st.selectbox("ไส้:", ["🍓 สตรอเบอร์รี่", "🍫 ช็อคโกแลต", "🫐 บลูเบอร์รี่", "🍯 คาราเมล"])
@@ -115,8 +198,13 @@ if cake_type == "เค้กปอนด์ 🎂":
     # Selecting candle
     st.markdown("<div class='box'><span class='title'>🕯️เทียน </span></div>", unsafe_allow_html=True)
     candle_type = st.radio("เทียน (แท่งละ 10 บาท):", ["เทียนเกลียว", "เทียนสั้นสีชมพู", "ไม่รับเทียน"])
-
     num_candles = st.slider("จำนวน (แท่ง):", min_value=1, max_value=10, value=1) if candle_type != "ไม่รับเทียน" else 0
+    card_type = st.radio("การ์ด (ใบละ 10 บาท):", ["รับ", "ไม่รับ"])
+    if card_type == "รับ":
+        card_text = st.text_input("ข้อความบนการ์ด:")
+    else:
+        card_text = "ไม่มีรับการ์ด" 
+    match_box = st.radio("ไม้ขีดไฟ (กล่องละ 10 บาท):", ["รับ", "ไม่รับ"])
 
     # Delivery details
     st.markdown("<div class='box'><span class='title'>🚗 ข้อมูลการจัดส่ง </span></div>", unsafe_allow_html=True)
@@ -145,7 +233,7 @@ if cake_type == "เค้กปอนด์ 🎂":
 - เบอร์โทร: {phone_number}
 - ช่องทางสั่ง : {order_channel}
 
-🎂 รายละเอียดเค้ก
+🎂 ประเภทเค้ก: {st.session_state.cake_type}
 - เนื้อเค้ก: {cake_base}
 - ไส้: {cake_filling}
 - ขนาด: {cake_size}
@@ -153,8 +241,10 @@ if cake_type == "เค้กปอนด์ 🎂":
 - ข้อความ: {cake_text}
 - บรีฟอื่นๆ: {cake_specification}
 
-🕯️ เทียน 
+🕯️ เทียนและการ์ด
 - เทียน : {candle_type} {num_candles} แท่ง
+- การ์ด : {card_type} {card_text}
+- ไม้ขีดไฟ : {match_box}
 
 🚗 ข้อมูลการจัดส่ง
 - วันรับเค้ก: {delivery_date}
@@ -173,7 +263,7 @@ if cake_type == "เค้กปอนด์ 🎂":
         send_telegram_photo(order_summary, image_path)
 
 
-elif cake_type == "เค้กชิ้น 🍰":
+elif st.session_state.cake_type == "เค้กชิ้น 🍰":
     st.markdown("<div class='box'><span class='title'>🍰 เค้กชิ้น</span></div>", unsafe_allow_html=True)
     num_pieces = st.selectbox("จำนวนชิ้น:", list(range(1, 101)))
     
@@ -184,11 +274,16 @@ elif cake_type == "เค้กชิ้น 🍰":
     # Packing choice for 4 or 6 pieces
     packing_option = st.radio("เลือกวิธีแพ็ค:", ["แยกชิ้น", "รวมกล่องเดียวกัน"]) if num_pieces in [4, 6] else "แยกชิ้น"
 
-    # Selecting candle
-    st.markdown("<div class='box'><span class='title'>🕯️เทียน </span></div>", unsafe_allow_html=True)
+    # Selecting candle and card
+    st.markdown("<div class='box'><span class='title'>🕯️เทียนและการ์ด  </span></div>", unsafe_allow_html=True)
     candle_type = st.radio("เทียน (แท่งละ 10 บาท):", ["เทียนเกลียว", "เทียนสั้นสีชมพู", "ไม่รับเทียน"])
-
     num_candles = st.slider("จำนวน (แท่ง):", min_value=1, max_value=10, value=1) if candle_type != "ไม่รับเทียน" else 0
+    card_type = st.radio("การ์ด (ใบละ 10 บาท):", ["รับ", "ไม่รับ"])
+    if card_type == "รับ":
+        card_text = st.text_input("ข้อความบนการ์ด:")
+    else:
+        card_text = "ไม่มีรับการ์ด" 
+    match_box = st.radio("ไม้ขีดไฟ (กล่องละ 10 บาท):", ["รับ", "ไม่รับ"])
     
     # Delivery details
     st.markdown("<div class='box'><span class='title'>🚗 ข้อมูลการจัดส่ง </span></div>", unsafe_allow_html=True)
@@ -216,13 +311,15 @@ elif cake_type == "เค้กชิ้น 🍰":
 - เบอร์โทร: {phone_number}
 - ช่องทางสั่ง : {order_channel}
 
-🍰 รายละเอียดเค้กชิ้น
+🎂 ประเภทเค้ก: {st.session_state.cake_type}
 - จำนวน: {num_pieces} ชิ้น
 - รสชาติ:\n{chr(10).join(cake_flavors)}
 - วิธีแพ็ค: {packing_option}
 
-🕯️ เทียน 
+🕯️ เทียนและการ์ด
 - เทียน : {candle_type} {num_candles} แท่ง
+- การ์ด : {card_type} {card_text}
+- ไม้ขีดไฟ : {match_box}
 
 🚗 ข้อมูลการจัดส่ง
 - วันรับเค้ก: {delivery_date}
