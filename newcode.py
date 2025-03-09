@@ -328,14 +328,28 @@ if st.session_state.cake_design:
         )
     delivery_location = st.text_input("สถานที่ส่ง (หากมารับเองใส่ว่ามารับเอง)", placeholder="สามารถใส่เป็น Google Link หรือชื่อสถานที่ได้")
     
-    # Order Confirmation Buttons
-    if st.button("✅ ยืนยันคำสั่งซื้อ"):
-        order_summary = f"""
+    # Order Confirmation Button
+if st.button("✅ ยืนยันคำสั่งซื้อ"):
+    # Determine selected cake image for display
+    selected_cake_image = cake_designs.get(st.session_state.cake_design, None)
+
+    # If "Cake Custom (แบบอื่นๆ)" is selected and an image is uploaded, save it
+    image_path = None
+    if st.session_state.cake_design == "Cake Custom (แบบอื่นๆ)" and custom_cake_photo:
+        os.makedirs("uploaded_images", exist_ok=True)
+        image_path = os.path.join("uploaded_images", custom_cake_photo.name)
+        with open(image_path, "wb") as f:
+            f.write(custom_cake_photo.getbuffer())
+        selected_cake_image = image_path  # Use uploaded image
+
+    # Construct Order Summary
+    order_summary = f"""
 💌 K.{customer_name}
 - เบอร์โทร: {phone_number}
 - ช่องทางสั่ง : {order_channel}
 
 🎂 ประเภทเค้ก: {st.session_state.cake_type}
+- 🎨 แบบเค้ก: {st.session_state.cake_design}
 - เนื้อเค้ก: {cake_base}
 - ไส้: {cake_filling}
 - ขนาด: {cake_size}
@@ -353,17 +367,22 @@ if st.session_state.cake_design:
 - เวลา: {delivery_time}
 - วิธีจัดส่ง: {delivery_option}
 - สถานที่รับ: {delivery_location}
-        """
-        st.success(order_summary)
-        if image_path:
-            st.image(image_path, caption="📷 รูปตัวอย่างเค้กที่อัพโหลด", use_container_width=True)
-        
-        # Send text + image to Line notify
-        send_line_notification(order_summary, image_path)
+    """
 
-        # Send text + image to Telegram
-        send_telegram_photo(order_summary, image_path)
+    # ✅ Show Order Summary in Streamlit
+    st.success(order_summary)
 
+    # ✅ Always Display the Selected Cake Image in Order Summary
+    if selected_cake_image:
+        st.image(selected_cake_image, caption="🎂 ดีไซน์เค้กที่เลือก", use_container_width=True)
+
+    # ✅ FIX: Send image **only if "Cake Custom (แบบอื่นๆ)" is selected**
+    if st.session_state.cake_design == "Cake Custom (แบบอื่นๆ)" and image_path:
+        send_line_notification(order_summary, image_path)  # Send local file
+        send_telegram_photo(order_summary, image_path)  # Send local file
+    else:
+        send_line_notification(order_summary)  # Send text only
+        send_telegram_message(order_summary)  # Send text only
 
 elif st.session_state.cake_type == "เค้กชิ้น 🍰":
     st.markdown("<div class='box'><span class='title'>🍰 เค้กชิ้น</span></div>", unsafe_allow_html=True)
