@@ -4,10 +4,34 @@ import os
 import requests
 from PIL import Image
 
+# Telegram token and ID
+TELEGRAM_BOT_TOKEN = "7886819703:AAGYLfxKsaY9TVYg9kwUyj2qAB-JBiIVcTE"
+TELEGRAM_CHAT_ID = "7897964568"
 
-
-# LINE Notify Token (Replace with your actual token)
+# LINE Notify Token 
 LINE_NOTIFY_TOKEN = "cFNP09HM6p72xrzSbqeiTrXHN81WYfbL1d8Spjp3Izi"
+
+# Function to send telegram massage and photo
+def send_telegram_message(message):
+    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    telegram_payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
+    
+    response = requests.post(telegram_url, json=telegram_payload)
+    print(response.json())  # Debugging output
+
+def send_telegram_photo(message, image_path):
+    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    telegram_payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
+    
+    # Send text first
+    requests.post(telegram_url, json=telegram_payload)
+
+    # Send image
+    if image_path:
+        telegram_photo_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
+        with open(image_path, "rb") as photo:
+            files = {"photo": photo}
+            requests.post(telegram_photo_url, data={"chat_id": TELEGRAM_CHAT_ID}, files=files)
 
 # Function to send LINE notification
 def send_line_notification(message, image_path=None):
@@ -16,7 +40,6 @@ def send_line_notification(message, image_path=None):
     data = {"message": message}
     files = {"imageFile": open(image_path, "rb")} if image_path else None
     requests.post(url, headers=headers, data=data, files=files)
-
 
 
 # Streamlit App Title
@@ -80,7 +103,6 @@ if cake_type == "เค้กปอนด์ 🎂":
             f.write(uploaded_file.getbuffer())
         st.image(image_path, caption="ตัวอย่างเค้ก", use_container_width=True)
 
-
     # Selecting candle
     st.markdown("<div class='box'><span class='title'>🕯️เทียน </span></div>", unsafe_allow_html=True)
     candle_type = st.radio("เทียน (แท่งละ 10 บาท):", ["เทียนเกลียว", "เทียนสั้นสีชมพู", "ไม่รับเทียน"])
@@ -134,7 +156,12 @@ if cake_type == "เค้กปอนด์ 🎂":
         st.success(order_summary)
         if image_path:
             st.image(image_path, caption="📷 รูปตัวอย่างเค้กที่อัพโหลด", use_container_width=True)
+        
+        # Send text + image to Line notify
         send_line_notification(order_summary, image_path)
+
+        # Send text + image to Telegram
+        send_telegram_photo(order_summary, image_path)
 
 
 elif cake_type == "เค้กชิ้น 🍰":
@@ -146,7 +173,7 @@ elif cake_type == "เค้กชิ้น 🍰":
         flavor = st.selectbox(f"เลือกไส้เค้กชิ้นที่ {i+1}", ["สตรอเบอร์รี่", "บลูเบอร์รี่", "ส้ม", "เลมอน", "มะม่วง", "มะพร้าว", "ช็อคโกแลต", "คาราเมล", "บานอฟฟี่"])
         cake_flavors.append(f"{i+1}. {flavor}")
     # Packing choice for 4 or 6 pieces
-    packing_option = st.radio("เลือกวิธีแพ็ค:", ["แยกชิ้น", "รวมกล่องเดียวกัน"]) if num_pieces in [4, 6] else "รวมกล่องเดียวกัน"
+    packing_option = st.radio("เลือกวิธีแพ็ค:", ["แยกชิ้น", "รวมกล่องเดียวกัน"]) if num_pieces in [4, 6] else "แยกชิ้น"
 
     # Selecting candle
     st.markdown("<div class='box'><span class='title'>🕯️เทียน </span></div>", unsafe_allow_html=True)
@@ -159,6 +186,18 @@ elif cake_type == "เค้กชิ้น 🍰":
     delivery_date = st.date_input("วันรับเค้ก")
     delivery_time = st.time_input("เวลารับเค้ก")
     delivery_option = st.radio("วิธีส่ง:", ["มารับเอง", "รถมอเตอร์ไซต์", "รถยนต์"])
+    if delivery_option == "รถมอเตอร์ไซต์":
+        st.warning(
+            "เนื่องจากเค้กมีความละเอียดในการส่ง รบกวนลูกค้าอ่านรายละเอียดก่อนนะคะ\n"
+            "การส่งเค้กของทางร้านใช้บริการจาก lalamove / bolt / grab \n"
+            
+            "❌ ข้อจำกัดการส่งมอเตอร์ไซต์\n"
+            "1. เค้ก 1.5 ปอนด์ขึ้นไปไม่สามารถส่งด้วยมอเตอร์ไซต์ได้\n"
+            "2. ไม่แนะนำส่งในระยะทางเกิน 10 กม.\n"
+            "3. ไม่แนะนำส่งงาน 3D หรือที่มีความสูง\n"
+            "4. ไม่แนะนำส่งงานผลไม้\n"
+            "⛔️ ทางร้านไม่รับผิดชอบเค้กที่เสียหายจากการขนส่งในทุกกรณีนะคะ🙏🏻"
+        )
     delivery_location = st.text_input("สถานที่ส่ง (หากมารับเองใส่ว่ามารับเอง)", placeholder="สามารถใส่เป็น Google Link หรือชื่อสถานที่ได้")
     
     # Order Confirmation Button
@@ -171,6 +210,7 @@ elif cake_type == "เค้กชิ้น 🍰":
 🍰 รายละเอียดเค้กชิ้น
 - จำนวน: {num_pieces} ชิ้น
 - รสชาติ:\n{chr(10).join(cake_flavors)}
+- วิธีแพ็ค: {packing_option}
 
 🕯️ เทียน 
 - เทียน : {candle_type} {num_candles} แท่ง
@@ -183,6 +223,4 @@ elif cake_type == "เค้กชิ้น 🍰":
         """
         st.success(order_summary)
         send_line_notification(order_summary)
-
-
-
+        send_line_oa_message(order_summary,image_url)
