@@ -40,10 +40,18 @@ def send_line_notification(message, image_path=None):
     data = {"message": message}
     files = {"imageFile": open(image_path, "rb")} if image_path else None
     requests.post(url, headers=headers, data=data, files=files)
+# LOGO
+logo_url = "https://raw.githubusercontent.com/Purseasama/Testcakeapp/main/sugarshadelogo.jpeg"
 
-
-# Streamlit App Title
-st.title("✨ Sugar Shade")
+# Display the logo at the top
+st.markdown(
+    f"""
+    <div style="text-align: center;">
+        <img src="{logo_url}" width="200">
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 # Modernized UI with Styled Sections
 st.markdown("""
