@@ -165,9 +165,102 @@ if st.session_state.cake_type:
         unsafe_allow_html=True,
     )
 
+# Ensure session state is initialized
+if "cake_type" not in st.session_state:
+    st.session_state.cake_type = None
+if "cake_design" not in st.session_state:
+    st.session_state.cake_design = None
+
 # 🔹 Display the next section based on selection
 if st.session_state.cake_type == "เค้กปอนด์ 🎂":
-    st.markdown("<div class='box'><span class='title'>🎂 เค้กปอนด์</span></div>", unsafe_allow_html=True)
+    st.markdown("<div class='box'><span class='title'>🎨 เลือกดีไซน์เค้ก</span></div>", unsafe_allow_html=True)
+
+    # Cake Design Options (Images)
+    cake_designs = {
+        "Cake Queen": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20queen.jpg",
+        "Cake Princess": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20princess.jpg",
+        "Cake Angel": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20angel.jpg",
+        "Cake Super strawberry": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20super%20strawberry.jpg",
+        "Cake Floral": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20floral.jpg",
+        "Cake Glam": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20glam.jpg",
+        "Cake Strawberry lover": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20strawberry%20lover.jpg",
+        "Cake Cherry": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20cherry.jpg",
+        "Cake Custom (แบบอื่นๆ)": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20custom.jpg"
+    }
+
+    # Display clickable images
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        if st.button("Cake Queen", key="Cake Queen"):
+            st.session_state.cake_design = "Cake Queen"
+        st.image(cake_designs["Cake Queen"], use_container_width=True)
+
+    with col2:
+        if st.button("Cake Princess", key="Cake Princess"):
+            st.session_state.cake_design = "Cake Princess"
+        st.image(cake_designs["Cake Princess"], use_container_width=True)
+
+    with col3:
+        if st.button("Cake Angel", key="Cake Angel"):
+            st.session_state.cake_design = "Cake Angel"
+        st.image(cake_designs["Cake Angel"], use_container_width=True)
+
+    col4, col5, col6 = st.columns(3)
+    with col4:
+        if st.button("Cake Super strawberry", key="Cake Super strawberry"):
+            st.session_state.cake_design = "Cake Super strawberry"
+        st.image(cake_designs["Cake Super strawberry"], use_container_width=True)
+
+    with col5:
+        if st.button("Cake Floral", key="Cake Floral"):
+            st.session_state.cake_design = "Cake Floral"
+        st.image(cake_designs["Cake Floral"], use_container_width=True)
+
+    with col6:
+        if st.button("Cake Glam", key="Cake Glam"):
+            st.session_state.cake_design = "Cake Glam"
+        st.image(cake_designs["Cake Glam"], use_container_width=True)
+    
+    col7, col8, col9 = st.columns(3)
+    with col7:
+        if st.button("Cake Strawberry lover", key="Cake Strawberry lover"):
+            st.session_state.cake_design = "Cake Strawberry lover"
+        st.image(cake_designs["Cake Strawberry lover"], use_container_width=True)
+
+    with col8:
+        if st.button("Cake Cherry", key="Cake Cherry"):
+            st.session_state.cake_design = "Cake Cherry"
+        st.image(cake_designs["Cake Cherry"], use_container_width=True)
+
+    with col9:
+        if st.button("Cake Custom (แบบอื่นๆ)", key="Cake Custom (แบบอื่นๆ)"):
+            st.session_state.cake_design = "Cake Custom (แบบอื่นๆ)"
+        st.image(cake_designs["Cake Custom (แบบอื่นๆ)"], use_container_width=True)
+    # If "Cake Custom" is selected, allow photo upload
+if st.session_state.cake_design == "Cake Custom (แบบอื่นๆ)":
+    custom_cake_photo = st.file_uploader("📷 อัพโหลดแบบเค้ก", type=["jpg", "png", "jpeg"])
+
+    if custom_cake_photo is not None:
+        # Create directory if not exists
+        os.makedirs("uploaded_images", exist_ok=True)
+
+        # Save the file
+        image_path = os.path.join("uploaded_images", custom_cake_photo.name)
+        with open(image_path, "wb") as f:
+            f.write(custom_cake_photo.getbuffer())
+
+        # Display uploaded image
+        st.image(image_path, caption="📷 ตัวอย่างเค้กของคุณ", use_container_width=True)
+
+
+    st.markdown("<div class='box'><span class='title'>🎂 รายละเอียดเค้ก</span></div>", unsafe_allow_html=True)
+    # Ensure session state for cake design selection
+if "cake_design" not in st.session_state:
+    st.session_state.cake_design = None
+
+# Display selected cake design first
+if st.session_state.cake_design:
+    st.write(f" **แบบเค้ก:** {st.session_state.cake_design}")
     cake_base = st.selectbox("เนื้อเค้ก:", ["วานิลลา", "ช็อคโกแลต"])
     cake_filling = st.selectbox("ไส้:", ["🍓 สตรอเบอร์รี่", "🍫 ช็อคโกแลต", "🫐 บลูเบอร์รี่", "🍯 คาราเมล"])
     cake_size = st.selectbox("ขนาด:", ["0.5 ปอนด์", "1 ปอนด์", "1.5 ปอนด์"])
@@ -183,28 +276,37 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     cake_text = st.text_input("ข้อความที่ต้องการเขียนบนเค้ก/ฐาน", placeholder="เช่น Happy birthday!")
     cake_specification = st.text_input("บรีฟอื่นๆ (หากมี)", placeholder="เช่น ขอเปลี่ยนจากโบว์สีแดงเป็นสีดำ")
 
-    # Upload Cake Reference Image
-    uploaded_file = st.file_uploader("📷 อัพโหลดภาพตัวอย่างเค้ก (ถ้ามี)", type=["jpg", "png", "jpeg"])
-
-    # Save uploaded file
-    image_path = None
-    if uploaded_file is not None:
-        image_path = os.path.join("uploaded_images", uploaded_file.name)
-        os.makedirs("uploaded_images", exist_ok=True)
-        with open(image_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
-        st.image(image_path, caption="ตัวอย่างเค้ก", use_container_width=True)
-
     # Selecting candle
     st.markdown("<div class='box'><span class='title'>🕯️เทียน </span></div>", unsafe_allow_html=True)
-    candle_type = st.radio("เทียน (แท่งละ 10 บาท):", ["เทียนเกลียว", "เทียนสั้นสีชมพู", "ไม่รับเทียน"])
-    num_candles = st.slider("จำนวน (แท่ง):", min_value=1, max_value=10, value=1) if candle_type != "ไม่รับเทียน" else 0
-    card_type = st.radio("การ์ด (ใบละ 10 บาท):", ["รับ", "ไม่รับ"])
+    col1, col2 = st.columns(2)
+    with col1:
+        candle_type = st.radio("เทียน (แท่งละ 10 บาท):", ["เทียนเกลียว", "เทียนสั้นสีชมพู", "ไม่รับเทียน"])
+        num_candles = st.slider("จำนวน (แท่ง):", min_value=1, max_value=10, value=1) if candle_type != "ไม่รับเทียน" else 0
+    with col2:
+        candle_image = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/candlesnew.jpg"
+        st.image(candle_image, use_container_width=True)
+
+    # Selecting card
+    st.markdown("<div class='box'><span class='title'>💌การ์ด </span></div>", unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        card_type = st.radio("การ์ด (ใบละ 10 บาท):", ["รับ", "ไม่รับ"])
     if card_type == "รับ":
         card_text = st.text_input("ข้อความบนการ์ด:")
     else:
         card_text = "ไม่มีรับการ์ด" 
-    match_box = st.radio("ไม้ขีดไฟ (กล่องละ 10 บาท):", ["รับ", "ไม่รับ"])
+    with col2:
+        card_image = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cardsnew.jpg"
+        st.image(card_image, use_container_width=True)
+    
+       # Selecting matchbox
+    st.markdown("<div class='box'><span class='title'>🧨ไม้ขีดไฟ </span></div>", unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        match_box = st.radio("ไม้ขีดไฟ (กล่องละ 10 บาท):", ["รับ", "ไม่รับ"])
+    with col2:
+        matchbox_image = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/matchboxnew.jpg"
+        st.image(matchbox_image, use_container_width=True)
 
     # Delivery details
     st.markdown("<div class='box'><span class='title'>🚗 ข้อมูลการจัดส่ง </span></div>", unsafe_allow_html=True)
@@ -274,16 +376,37 @@ elif st.session_state.cake_type == "เค้กชิ้น 🍰":
     # Packing choice for 4 or 6 pieces
     packing_option = st.radio("เลือกวิธีแพ็ค:", ["แยกชิ้น", "รวมกล่องเดียวกัน"]) if num_pieces in [4, 6] else "แยกชิ้น"
 
-    # Selecting candle and card
-    st.markdown("<div class='box'><span class='title'>🕯️เทียนและการ์ด  </span></div>", unsafe_allow_html=True)
-    candle_type = st.radio("เทียน (แท่งละ 10 บาท):", ["เทียนเกลียว", "เทียนสั้นสีชมพู", "ไม่รับเทียน"])
-    num_candles = st.slider("จำนวน (แท่ง):", min_value=1, max_value=10, value=1) if candle_type != "ไม่รับเทียน" else 0
-    card_type = st.radio("การ์ด (ใบละ 10 บาท):", ["รับ", "ไม่รับ"])
+    # Selecting candle
+    st.markdown("<div class='box'><span class='title'>🕯️เทียน </span></div>", unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        candle_type = st.radio("เทียน (แท่งละ 10 บาท):", ["เทียนเกลียว", "เทียนสั้นสีชมพู", "ไม่รับเทียน"])
+        num_candles = st.slider("จำนวน (แท่ง):", min_value=1, max_value=10, value=1) if candle_type != "ไม่รับเทียน" else 0
+    with col2:
+        candle_image = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/candlesnew.jpg"
+        st.image(candle_image, use_container_width=True)
+
+    # Selecting card
+    st.markdown("<div class='box'><span class='title'>💌การ์ด </span></div>", unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        card_type = st.radio("การ์ด (ใบละ 10 บาท):", ["รับ", "ไม่รับ"])
     if card_type == "รับ":
         card_text = st.text_input("ข้อความบนการ์ด:")
     else:
         card_text = "ไม่มีรับการ์ด" 
-    match_box = st.radio("ไม้ขีดไฟ (กล่องละ 10 บาท):", ["รับ", "ไม่รับ"])
+    with col2:
+        card_image = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cardsnew.jpg"
+        st.image(card_image, use_container_width=True)
+    
+       # Selecting matchbox
+    st.markdown("<div class='box'><span class='title'>🧨ไม้ขีดไฟ </span></div>", unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        match_box = st.radio("ไม้ขีดไฟ (กล่องละ 10 บาท):", ["รับ", "ไม่รับ"])
+    with col2:
+        matchbox_image = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/matchboxnew.jpg"
+        st.image(matchbox_image, use_container_width=True)
     
     # Delivery details
     st.markdown("<div class='box'><span class='title'>🚗 ข้อมูลการจัดส่ง </span></div>", unsafe_allow_html=True)
