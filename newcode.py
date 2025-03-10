@@ -236,45 +236,51 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
         if st.button("Cake Custom (แบบอื่นๆ)", key="Cake Custom (แบบอื่นๆ)"):
             st.session_state.cake_design = "Cake Custom (แบบอื่นๆ)"
         st.image(cake_designs["Cake Custom (แบบอื่นๆ)"], use_container_width=True)
-    # If "Cake Custom" is selected, allow photo upload
-if st.session_state.cake_design == "Cake Custom (แบบอื่นๆ)":
-    custom_cake_photo = st.file_uploader("📷 อัพโหลดแบบเค้ก", type=["jpg", "png", "jpeg"])
+    
+    # If "Cake Custom (แบบอื่นๆ)" is selected, allow photo upload
+    if st.session_state.cake_design == "Cake Custom (แบบอื่นๆ)":
+        custom_cake_photo = st.file_uploader("📷 อัพโหลดแบบเค้ก", type=["jpg", "png", "jpeg"])
 
-    if custom_cake_photo is not None:
-        # Create directory if not exists
-        os.makedirs("uploaded_images", exist_ok=True)
+        # Ensure the file is uploaded before proceeding
+        if custom_cake_photo:
+            # Create directory if not exists
+            os.makedirs("uploaded_images", exist_ok=True)
 
-        # Save the file
-        image_path = os.path.join("uploaded_images", custom_cake_photo.name)
-        with open(image_path, "wb") as f:
-            f.write(custom_cake_photo.getbuffer())
+            # Save the file
+            image_path = os.path.join("uploaded_images", custom_cake_photo.name)
+            with open(image_path, "wb") as f:
+                f.write(custom_cake_photo.getbuffer())
 
-        # Display uploaded image
-        st.image(image_path, caption="📷 ตัวอย่างเค้กของคุณ", use_container_width=True)
+            # Display uploaded image
+            st.image(image_path, caption="📷 ตัวอย่างเค้กของคุณ", use_container_width=True)
+
+            # Store image path in session state for later use
+            st.session_state.custom_cake_image_path = image_path
+        else:
+            st.warning("📌 กรุณาอัปโหลดรูปเค้กของคุณ")  # Show warning if no file is uploaded
+
 
 
     st.markdown("<div class='box'><span class='title'>🎂 รายละเอียดเค้ก</span></div>", unsafe_allow_html=True)
     # Ensure session state for cake design selection
-if "cake_design" not in st.session_state:
-    st.session_state.cake_design = None
-
-# Display selected cake design first
-if st.session_state.cake_design:
-    st.write(f" **แบบเค้ก:** {st.session_state.cake_design}")
-    cake_base = st.selectbox("เนื้อเค้ก:", ["วานิลลา", "ช็อคโกแลต"])
-    cake_filling = st.selectbox("ไส้:", ["🍓 สตรอเบอร์รี่", "🍫 ช็อคโกแลต", "🫐 บลูเบอร์รี่", "🍯 คาราเมล"])
-    cake_size = st.selectbox("ขนาด:", ["0.5 ปอนด์", "1 ปอนด์", "1.5 ปอนด์"])
+    if "cake_design" not in st.session_state:
+        st.session_state.cake_design = None
     
-    cake_color_options = ["ชมพู", "ฟ้า", "ขาว", "ดำ", "ม่วง", "สีอื่นๆโปรดระบุ"]
-    cake_color_choice = st.selectbox("สีเค้ก:", cake_color_options)
-    if cake_color_choice == "สีอื่นๆโปรดระบุ":
-        custom_cake_color = st.text_input("สีอื่นๆ")
-        cake_color = custom_cake_color if custom_cake_color else "Not Specified"
-    else:
-        cake_color = cake_color_choice
-        
-    cake_text = st.text_input("ข้อความที่ต้องการเขียนบนเค้ก/ฐาน", placeholder="เช่น Happy birthday!")
-    cake_specification = st.text_input("บรีฟอื่นๆ (หากมี)", placeholder="เช่น ขอเปลี่ยนจากโบว์สีแดงเป็นสีดำ")
+    # Display selected cake design first
+    if st.session_state.cake_design:
+        st.write(f" **แบบเค้ก:** {st.session_state.cake_design}")
+        cake_base = st.selectbox("เนื้อเค้ก:", ["วานิลลา", "ช็อคโกแลต"])
+        cake_filling = st.selectbox("ไส้:", ["🍓 สตรอเบอร์รี่", "🍫 ช็อคโกแลต", "🫐 บลูเบอร์รี่", "🍯 คาราเมล"])
+        cake_size = st.selectbox("ขนาด:", ["0.5 ปอนด์", "1 ปอนด์", "1.5 ปอนด์"])
+        cake_color_options = ["ชมพู", "ฟ้า", "ขาว", "ดำ", "ม่วง", "สีอื่นๆโปรดระบุ"]
+        cake_color_choice = st.selectbox("สีเค้ก:", cake_color_options)
+        if cake_color_choice == "สีอื่นๆโปรดระบุ":
+            custom_cake_color = st.text_input("สีอื่นๆ")
+            cake_color = custom_cake_color if custom_cake_color else "Not Specified"
+        else:
+            cake_color = cake_color_choice
+        cake_text = st.text_input("ข้อความที่ต้องการเขียนบนเค้ก/ฐาน", placeholder="เช่น Happy birthday!")
+        cake_specification = st.text_input("บรีฟอื่นๆ (หากมี)", placeholder="เช่น ขอเปลี่ยนจากโบว์สีแดงเป็นสีดำ")
 
     # Selecting candle
     st.markdown("<div class='box'><span class='title'>🕯️เทียน </span></div>", unsafe_allow_html=True)
@@ -327,71 +333,98 @@ if st.session_state.cake_design:
             "⛔️ ทางร้านไม่รับผิดชอบเค้กที่เสียหายจากการขนส่งในทุกกรณีนะคะ🙏🏻"
         )
     delivery_location = st.text_input("สถานที่ส่ง (หากมารับเองใส่ว่ามารับเอง)", placeholder="สามารถใส่เป็น Google Link หรือชื่อสถานที่ได้")
-    
-    # Order Confirmation Button
-if st.button("✅ ยืนยันคำสั่งซื้อ"):
-    # Determine selected cake image for display
-    selected_cake_image = cake_designs.get(st.session_state.cake_design, None)
+   
+    if st.button("✅ ยืนยันคำสั่งซื้อ"):
+        # Determine selected cake image for display
+        selected_cake_image = cake_designs.get(st.session_state.cake_design, None)
 
-    # If "Cake Custom (แบบอื่นๆ)" is selected and an image is uploaded, save it
-    image_path = None
-    if st.session_state.cake_design == "Cake Custom (แบบอื่นๆ)" and custom_cake_photo:
-        os.makedirs("uploaded_images", exist_ok=True)
-        image_path = os.path.join("uploaded_images", custom_cake_photo.name)
-        with open(image_path, "wb") as f:
-            f.write(custom_cake_photo.getbuffer())
-        selected_cake_image = image_path  # Use uploaded image
+        # If "Cake Custom (แบบอื่นๆ)" is selected and an image is uploaded, save it
+        image_path = None
+        if st.session_state.cake_design == "Cake Custom (แบบอื่นๆ)" and custom_cake_photo:
+            os.makedirs("uploaded_images", exist_ok=True)
+            image_path = os.path.join("uploaded_images", custom_cake_photo.name)
+            with open(image_path, "wb") as f:
+                f.write(custom_cake_photo.getbuffer())
+            selected_cake_image = image_path  # Use uploaded image
 
-    # Construct Order Summary
-    order_summary = f"""
-💌 K.{customer_name}
-- เบอร์โทร: {phone_number}
-- ช่องทางสั่ง : {order_channel}
+        # Construct Order Summary
+        order_summary = f"""
+    💌 K.{customer_name}
+    - เบอร์โทร: {phone_number}
+    - ช่องทางสั่ง : {order_channel}
 
-🎂 ประเภทเค้ก: {st.session_state.cake_type}
-- 🎨 แบบเค้ก: {st.session_state.cake_design}
-- เนื้อเค้ก: {cake_base}
-- ไส้: {cake_filling}
-- ขนาด: {cake_size}
-- สีเค้ก: {cake_color}
-- ข้อความ: {cake_text}
-- บรีฟอื่นๆ: {cake_specification}
+    🎂 ประเภทเค้ก: {st.session_state.cake_type}
+    - 🎨 แบบเค้ก: {st.session_state.cake_design}
+    - เนื้อเค้ก: {cake_base}
+    - ไส้: {cake_filling}
+    - ขนาด: {cake_size}
+    - สีเค้ก: {cake_color}
+    - ข้อความ: {cake_text}
+    - บรีฟอื่นๆ: {cake_specification}
 
-🕯️ เทียนและการ์ด
-- เทียน : {candle_type} {num_candles} แท่ง
-- การ์ด : {card_type} {card_text}
-- ไม้ขีดไฟ : {match_box}
+    🕯️ เทียนและการ์ด
+    - เทียน : {candle_type} {num_candles} แท่ง
+    - การ์ด : {card_type} {card_text}
+    - ไม้ขีดไฟ : {match_box}
 
-🚗 ข้อมูลการจัดส่ง
-- วันรับเค้ก: {delivery_date}
-- เวลา: {delivery_time}
-- วิธีจัดส่ง: {delivery_option}
-- สถานที่รับ: {delivery_location}
-    """
+    🚗 ข้อมูลการจัดส่ง
+    - วันรับเค้ก: {delivery_date}
+    - เวลา: {delivery_time}
+    - วิธีจัดส่ง: {delivery_option}
+    - สถานที่รับ: {delivery_location}
+     """
 
-    # ✅ Show Order Summary in Streamlit
-    st.success(order_summary)
+        # ✅ Show Order Summary in Streamlit
+        st.success(order_summary)
 
-    # ✅ Always Display the Selected Cake Image in Order Summary
-    if selected_cake_image:
-        st.image(selected_cake_image, caption="🎂 ดีไซน์เค้กที่เลือก", use_container_width=True)
+        # ✅ Always Display the Selected Cake Image in Order Summary
+        if selected_cake_image:
+            st.image(selected_cake_image, caption="🎂 ดีไซน์เค้กที่เลือก", use_container_width=True)
 
-    # ✅ FIX: Send image **only if "Cake Custom (แบบอื่นๆ)" is selected**
-    if st.session_state.cake_design == "Cake Custom (แบบอื่นๆ)" and image_path:
-        send_line_notification(order_summary, image_path)  # Send local file
-        send_telegram_photo(order_summary, image_path)  # Send local file
-    else:
-        send_line_notification(order_summary)  # Send text only
-        send_telegram_message(order_summary)  # Send text only
+        # ✅ FIX: Send image **only if "Cake Custom (แบบอื่นๆ)" is selected**
+        if st.session_state.cake_design == "Cake Custom (แบบอื่นๆ)" and image_path:
+            send_line_notification(order_summary, image_path)  # Send local file
+            send_telegram_photo(order_summary, image_path)  # Send local file
+        else:
+            send_line_notification(order_summary)  # Send text only
+            send_telegram_message(order_summary)  # Send text only 
+
+
 
 elif st.session_state.cake_type == "เค้กชิ้น 🍰":
     st.markdown("<div class='box'><span class='title'>🍰 เค้กชิ้น</span></div>", unsafe_allow_html=True)
-    num_pieces = st.selectbox("จำนวนชิ้น:", list(range(1, 101)))
     
+    # Cake flavor images
+    cake_flavor_images = {
+        "สตรอเบอร์รี่": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/mini%20strawberry.jpg",
+        "บลูเบอร์รี่": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/mini%20blueberry.jpg",
+        "องุ่น": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/mini%20grape.jpg",
+        "ส้ม": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/mini%20orange.jpg",
+        "เลมอน": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/mini%20lemon.jpg",
+        "บานอฟฟี่": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/mini%20banoffee.jpg",
+        "ช็อคโกแลต": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/mini%20choc.jpg",
+        "คาราเมล": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/mini%20caramel.jpg",
+    }
+
+    # Display cake images before selection
+    st.markdown("<div class='box'><span class='title'>🖼️ เลือกรสชาติเค้ก</span></div>", unsafe_allow_html=True)
+
+    cols = st.columns(4)  # Create columns to display images in a grid format
+    
+    # Display images of cake flavors
+    for index, (flavor, image_url) in enumerate(cake_flavor_images.items()):
+        with cols[index % 4]:  # Distribute images across columns
+            st.image(image_url, caption=flavor, use_container_width=True)
+
+    # Selection process after images are shown
+    num_pieces = st.selectbox("🧁 จำนวนชิ้น:", list(range(1, 101)))
+
+  # Allow selecting the same flavor multiple times
     cake_flavors = []
     for i in range(num_pieces):
-        flavor = st.selectbox(f"เลือกไส้เค้กชิ้นที่ {i+1}", ["สตรอเบอร์รี่", "บลูเบอร์รี่", "ส้ม", "เลมอน", "มะม่วง", "มะพร้าว", "ช็อคโกแลต", "คาราเมล", "บานอฟฟี่"])
-        cake_flavors.append(f"{i+1}. {flavor}")
+        selected_flavor = st.selectbox(f"เลือกไส้เค้กชิ้นที่ {i+1}", list(cake_flavor_images.keys()), key=f"flavor_{i}")
+        cake_flavors.append(selected_flavor) 
+
     # Packing choice for 4 or 6 pieces
     packing_option = st.radio("เลือกวิธีแพ็ค:", ["แยกชิ้น", "รวมกล่องเดียวกัน"]) if num_pieces in [4, 6] else "แยกชิ้น"
 
@@ -470,5 +503,7 @@ elif st.session_state.cake_type == "เค้กชิ้น 🍰":
 - สถานที่รับ: {delivery_location}
         """
         st.success(order_summary)
+        
         send_line_notification(order_summary)
-        send_line_oa_message(order_summary,image_url)
+        send_telegram_message(order_summary)
+        
