@@ -3,6 +3,8 @@ import pandas as pd
 import os
 import requests
 from PIL import Image
+import csv
+
 
 # Telegram token and ID
 TELEGRAM_BOT_TOKEN = "7886819703:AAGYLfxKsaY9TVYg9kwUyj2qAB-JBiIVcTE"
@@ -10,6 +12,67 @@ TELEGRAM_CHAT_ID = "7897964568"
 
 # LINE Notify Token 
 LINE_NOTIFY_TOKEN = "cFNP09HM6p72xrzSbqeiTrXHN81WYfbL1d8Spjp3Izi"
+
+# File path for order storage
+ordercakepond_file = "orderscakepond.csv"
+ordercakemini_file = "orderscakemini.csv"
+
+# ✅ Function to Save Order to CSV cake pond
+def save_ordercakepond_to_csv(ordercakepond_data):
+    file_exists = os.path.isfile(ordercakepond_file)
+
+    with open(ordercakepond_file, mode="a", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+
+        # Write headers if file does not exist
+        if not file_exists:
+            writer.writerow([
+                "Customer Name", "Phone", "Order Channel", "Cake Type", "Cake Design",
+                "Cake Base", "Cake Filling", "Cake Size", "Cake Color", "Cake Text", "Specification",
+                "Candle Type", "Number of Candles", "Card Type", "Card Text", "Match Box",
+                "Delivery Date", "Delivery Time", "Delivery Option", "Delivery Location"
+            ])
+        
+        # Append order details
+        writer.writerow(ordercakepond_data)
+
+# ✅ Function to Save Order to CSV cake mini
+def save_ordercakemini_to_csv(ordercakemini_data):
+    file_exists = os.path.isfile(ordercakemini_file)
+
+    with open(ordercakemini_file, mode="a", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+
+        # Write headers if file does not exist
+        if not file_exists:
+            writer.writerow([
+                "Customer Name", "Phone", "Order Channel", "Cake Type", "Number of pieces",
+                "Flavor", "Packing option","Candle Type", "Number of Candles", "Card Type", 
+                "Card Text", "Match Box","Delivery Date", "Delivery Time", "Delivery Option",
+                "Delivery Location"
+            ])
+        
+        # Append order details
+        writer.writerow(ordercakemini_data)
+
+# ✅ Function to Send CSV to Telegram cakepond
+def send_csvcakepond_to_telegram():
+    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendDocument"
+    
+    with open(ordercakepond_file, "rb") as file:
+        response = requests.post(telegram_url, data={"chat_id": TELEGRAM_CHAT_ID}, files={"document": file})
+    
+    print(response.json())
+
+
+# ✅ Function to Send CSV to Telegram cakemini
+def send_csvcakemini_to_telegram():
+    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendDocument"
+    
+    with open(ordercakemini_file, "rb") as file:
+        response = requests.post(telegram_url, data={"chat_id": TELEGRAM_CHAT_ID}, files={"document": file})
+    
+    print(response.json())
 
 # Function to send telegram massage and photo
 def send_telegram_message(message):
@@ -373,6 +436,14 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     - วิธีจัดส่ง: {delivery_option}
     - สถานที่รับ: {delivery_location}
      """
+        # Save Order data cakepond
+        ordercakepond_data = [
+            customer_name, phone_number, order_channel, st.session_state.cake_type, st.session_state.cake_design,
+            cake_base, cake_filling, cake_size, cake_color, cake_text, cake_specification,
+            candle_type, num_candles, card_type, card_text, match_box,
+            delivery_date, delivery_time, delivery_option, delivery_location
+        ]
+        save_ordercakepond_to_csv(ordercakepond_data)
 
         # ✅ Show Order Summary in Streamlit
         st.success(order_summary)
@@ -388,6 +459,9 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
         else:
             send_line_notification(order_summary)  # Send text only
             send_telegram_message(order_summary)  # Send text only 
+
+        # ✅ Send CSV to Telegram after saving the order
+        send_csvcakepond_to_telegram()
 
 
 
@@ -502,8 +576,19 @@ elif st.session_state.cake_type == "เค้กชิ้น 🍰":
 - วิธีจัดส่ง: {delivery_option}
 - สถานที่รับ: {delivery_location}
         """
+        # Save Order data cakemini
+        ordercakemini_data = [
+            customer_name, phone_number, order_channel, st.session_state.cake_type, num_pieces,
+            {chr(10).join(cake_flavors)}, packing_option,candle_type, num_candles, card_type, 
+            card_text, match_box, delivery_date, delivery_time, delivery_option, delivery_location
+        ]
+        save_ordercakemini_to_csv(ordercakemini_data)
+
         st.success(order_summary)
-        
+       
         send_line_notification(order_summary)
         send_telegram_message(order_summary)
+
+        # ✅ Send CSV to Telegram after saving the order
+        send_csvcakemini_to_telegram()
         
