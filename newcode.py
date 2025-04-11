@@ -399,7 +399,7 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     with col1:
         cake_knife = st.radio("มีดตัดเค้ก (อันละ 10 บาท):", ["รับ", "ไม่รับ"])
     with col2:
-        cakeknife_image = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/knife.jpg"
+        cakeknife_image = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cakeknife.jpg"
         st.image(cakeknife_image, use_container_width=True)
 
     # Delivery details
