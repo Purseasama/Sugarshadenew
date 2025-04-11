@@ -10,9 +10,6 @@ import csv
 TELEGRAM_BOT_TOKEN = "7886819703:AAGYLfxKsaY9TVYg9kwUyj2qAB-JBiIVcTE"
 TELEGRAM_CHAT_ID = "7897964568"
 
-# LINE Notify Token 
-LINE_NOTIFY_TOKEN = "cFNP09HM6p72xrzSbqeiTrXHN81WYfbL1d8Spjp3Izi"
-
 # File path for order storage
 ordercakepond_file = "orderscakepond.csv"
 ordercakemini_file = "orderscakemini.csv"
@@ -95,14 +92,24 @@ def send_telegram_photo(message, image_path):
         with open(image_path, "rb") as photo:
             files = {"photo": photo}
             requests.post(telegram_photo_url, data={"chat_id": TELEGRAM_CHAT_ID}, files=files)
+def send_telegram_photo_file(photo_file, caption=None):
+    telegram_photo_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
+    files = {
+        "photo": (photo_file.name, photo_file, photo_file.type)
+    }
+    data = {"chat_id": TELEGRAM_CHAT_ID}
+    if caption:
+        data["caption"] = caption
+    response = requests.post(telegram_photo_url, data=data, files=files)
+    return response
 
-# Function to send LINE notification
-def send_line_notification(message, image_path=None):
-    url = "https://notify-api.line.me/api/notify"
-    headers = {"Authorization": f"Bearer {LINE_NOTIFY_TOKEN}"}
-    data = {"message": message}
-    files = {"imageFile": open(image_path, "rb")} if image_path else None
-    requests.post(url, headers=headers, data=data, files=files)
+def send_uploaded_photos_to_telegram(uploaded_photos):
+    for photo in uploaded_photos:
+        caption = f"📎 เรฟ: {photo.name}"
+        response = send_telegram_photo_file(photo, caption)
+        if response.status_code != 200:
+            st.warning(f"❗ ไม่สามารถส่งรูป {photo.name} ไปยัง Telegram ได้: {response.text}")
+
 
 # LOGO
 logo_url = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/sugarshadelogo.jpeg"
@@ -138,7 +145,7 @@ st.markdown("""
 
 # Customer Information Section
 st.markdown("<div class='box'><span class='title'>📋 ข้อมูลลูกค้า</span></div>", unsafe_allow_html=True)
-customer_name = st.text_input("💌 ชื่อลูกค้า", placeholder="ใส่ชื่อเดียวกับชื่อ Line")
+customer_name = st.text_input("💌 ชื่อลูกค้า", placeholder="ใส่ชื่อเดียวกับชื่อ Line/FB/IG ตามช่องทางที่สั่ง")
 phone_number = st.text_input("📞 เบอร์โทรศัพท์", max_chars=15, placeholder=" XXX-XXX-XXXX")
 order_channel = st.radio("📲 ช่องทางสั่ง", ["Line", "Facebook", "Instagram"], horizontal=True)
 
@@ -242,12 +249,12 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     cake_designs = {
         "Cake Queen": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20queen.jpg",
         "Cake Princess": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20princess.jpg",
-        "Cake Angel": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20angel.jpg",
+        "Cake Angel": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/Cakeangel_new.jpg",
         "Cake Super strawberry": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20super%20strawberry.jpg",
         "Cake Floral": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20floral.jpg",
-        "Cake Glam": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20glam.jpg",
-        "Cake Strawberry lover": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20strawberry%20lover.jpg",
-        "Cake Cherry": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20cherry.jpg",
+        "Cake Animal Lover(Head)": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/animal_head.jpg",
+        "Cake Animal Lover(Body)": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/animal_body.jpg",
+        "Cake Animal Lover(Duo)": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/animal_duo.jpg",
         "Cake Custom (แบบอื่นๆ)": "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cake%20custom.jpg"
     }
 
@@ -280,20 +287,20 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
         st.image(cake_designs["Cake Floral"], use_container_width=True)
 
     with col6:
-        if st.button("Cake Glam", key="Cake Glam"):
-            st.session_state.cake_design = "Cake Glam"
-        st.image(cake_designs["Cake Glam"], use_container_width=True)
+        if st.button("Cake Animal Lover(Head)", key="Cake Animal Lover(Head)"):
+            st.session_state.cake_design = "Cake Animal Lover(Head)"
+        st.image(cake_designs["Cake Animal Lover(Head)"], use_container_width=True)
     
     col7, col8, col9 = st.columns(3)
     with col7:
-        if st.button("Cake Strawberry lover", key="Cake Strawberry lover"):
-            st.session_state.cake_design = "Cake Strawberry lover"
-        st.image(cake_designs["Cake Strawberry lover"], use_container_width=True)
+        if st.button("Cake Animal Lover(Body)", key="Cake Animal Lover(Body)"):
+            st.session_state.cake_design = "Cake Animal Lover(Body)"
+        st.image(cake_designs["Cake Animal Lover(Body)"], use_container_width=True)
 
     with col8:
-        if st.button("Cake Cherry", key="Cake Cherry"):
-            st.session_state.cake_design = "Cake Cherry"
-        st.image(cake_designs["Cake Cherry"], use_container_width=True)
+        if st.button("Cake Animal Lover(Duo)", key="Cake Animal Lover(Duo)"):
+            st.session_state.cake_design = "Cake Animal Lover(Duo)"
+        st.image(cake_designs["Cake Animal Lover(Duo)"], use_container_width=True)
 
     with col9:
         if st.button("Cake Custom (แบบอื่นๆ)", key="Cake Custom (แบบอื่นๆ)"):
@@ -344,6 +351,15 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
             cake_color = cake_color_choice
         cake_text = st.text_input("ข้อความที่ต้องการเขียนบนเค้ก/ฐาน", placeholder="เช่น Happy birthday!")
         cake_specification = st.text_input("บรีฟอื่นๆ (หากมี)", placeholder="เช่น ขอเปลี่ยนจากโบว์สีแดงเป็นสีดำ")
+        
+        # Allow multiple photo uploads
+        uploaded_photos = st.file_uploader("เพิ่มรูปภาพเพิ่มเติม (หากมี)", type=["jpg", "png", "jpeg"], accept_multiple_files=True)
+        
+        # Display uploaded images
+        if uploaded_photos:
+            st.write("Uploaded Images:")
+            for photo in uploaded_photos:
+                st.image(photo, caption=photo.name, use_container_width=True)
 
     # Selecting candle
     st.markdown("<div class='box'><span class='title'>🕯️เทียน </span></div>", unsafe_allow_html=True)
@@ -377,8 +393,20 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
         matchbox_image = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/matchboxnew.jpg"
         st.image(matchbox_image, use_container_width=True)
 
+        # Selecting cake knife
+    st.markdown("<div class='box'><span class='title'>🔪มีดตัดเค้ก</span></div>", unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        cake_knife = st.radio("มีดตัดเค้ก (อันละ 10 บาท):", ["รับ", "ไม่รับ"])
+    with col2:
+        cakeknife_image = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/knife.jpg"
+        st.image(cakeknife_image, use_container_width=True)
+
     # Delivery details
     st.markdown("<div class='box'><span class='title'>🚗 ข้อมูลการจัดส่ง </span></div>", unsafe_allow_html=True)
+    delivery_image= "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/delivery.jpg"  
+    st.image(delivery_image, use_container_width=True)
+
     delivery_date = st.date_input("วันรับเค้ก")
     delivery_time = st.time_input("เวลารับเค้ก")
     delivery_option = st.radio("วิธีส่ง:", ["มารับเอง", "รถมอเตอร์ไซต์", "รถยนต์"])
@@ -386,18 +414,27 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     if delivery_option == "รถมอเตอร์ไซต์":
         st.warning(
             "เนื่องจากเค้กมีความละเอียดในการส่ง รบกวนลูกค้าอ่านรายละเอียดก่อนนะคะ\n"
-            "การส่งเค้กของทางร้านใช้บริการจาก lalamove / bolt / grab \n"
             
             "❌ ข้อจำกัดการส่งมอเตอร์ไซต์\n"
-            "1. เค้ก 1.5 ปอนด์ขึ้นไปไม่สามารถส่งด้วยมอเตอร์ไซต์ได้\n"
+            "1. เค้ก 1 ปอนด์ขึ้นไปไม่แนะนำส่งด้วยรถมอเตอร์ไซต์ได้และ 1.5 ปอนด์ไม่สามารถส่งได้\n"
             "2. ไม่แนะนำส่งในระยะทางเกิน 10 กม.\n"
             "3. ไม่แนะนำส่งงาน 3D หรือที่มีความสูง\n"
             "4. ไม่แนะนำส่งงานผลไม้\n"
+
             "⛔️ ทางร้านไม่รับผิดชอบเค้กที่เสียหายจากการขนส่งในทุกกรณีนะคะ🙏🏻"
         )
-    delivery_location = st.text_input("สถานที่ส่ง (หากมารับเองใส่ว่ามารับเอง)", placeholder="สามารถใส่เป็น Google Link หรือชื่อสถานที่ได้")
+    delivery_location = st.text_input("สถานที่ส่ง (หากมารับเองเว้นไว้)", placeholder="สามารถใส่เป็น Google Link หรือชื่อสถานที่ได้")
    
     if st.button("✅ ยืนยันคำสั่งซื้อ"):
+        st.markdown(
+    """
+    <div style="background-color: black; color: white; padding: 10px; border-radius: 5px; font-size: 16px;">
+        <strong>ข้อมูลของคุณเข้าระบบแล้ว</strong><br>
+        แอดมินจะส่งข้อมูลเพื่อยืนยันและรวมยอดในช่องแชท
+    </div>
+    """,
+    unsafe_allow_html=True
+)
         # Determine selected cake image for display
         selected_cake_image = cake_designs.get(st.session_state.cake_design, None)
 
@@ -412,7 +449,7 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
 
         # Construct Order Summary
         order_summary = f"""
-    💌 K.{customer_name}
+    💌 K.{customer_name} 
     - เบอร์โทร: {phone_number}
     - ช่องทางสั่ง : {order_channel}
 
@@ -429,6 +466,7 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     - เทียน : {candle_type} {num_candles} แท่ง
     - การ์ด : {card_type} {card_text}
     - ไม้ขีดไฟ : {match_box}
+    - มีดตัดเค้ก : {cake_knife}
 
     🚗 ข้อมูลการจัดส่ง
     - วันรับเค้ก: {delivery_date}
@@ -440,7 +478,7 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
         ordercakepond_data = [
             customer_name, phone_number, order_channel, st.session_state.cake_type, st.session_state.cake_design,
             cake_base, cake_filling, cake_size, cake_color, cake_text, cake_specification,
-            candle_type, num_candles, card_type, card_text, match_box,
+            candle_type, num_candles, card_type, card_text, match_box,cake_knife,
             delivery_date, delivery_time, delivery_option, delivery_location
         ]
         save_ordercakepond_to_csv(ordercakepond_data)
@@ -454,11 +492,13 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
 
         # ✅ FIX: Send image **only if "Cake Custom (แบบอื่นๆ)" is selected**
         if st.session_state.cake_design == "Cake Custom (แบบอื่นๆ)" and image_path:
-            send_line_notification(order_summary, image_path)  # Send local file
             send_telegram_photo(order_summary, image_path)  # Send local file
         else:
-            send_line_notification(order_summary)  # Send text only
             send_telegram_message(order_summary)  # Send text only 
+
+        if uploaded_photos:
+            st.image(uploaded_photos, caption=[f"เรฟ {photo.name}" for photo in uploaded_photos], use_container_width=True)
+            send_uploaded_photos_to_telegram(uploaded_photos)
 
         # ✅ Send CSV to Telegram after saving the order
         send_csvcakepond_to_telegram()
@@ -585,9 +625,6 @@ elif st.session_state.cake_type == "เค้กชิ้น 🍰":
         save_ordercakemini_to_csv(ordercakemini_data)
 
         st.success(order_summary)
-       
-        send_line_notification(order_summary)
-        send_telegram_message(order_summary)
 
         # ✅ Send CSV to Telegram after saving the order
         send_csvcakemini_to_telegram()
