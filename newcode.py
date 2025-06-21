@@ -568,6 +568,36 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
         # ✅ Always Display the Selected Cake Image in Order Summary
         if selected_cake_image:
             st.image(selected_cake_image, caption="🎂 ดีไซน์เค้กที่เลือก", use_container_width=True)
+        
+        # Determine Trello card title
+        from datetime import datetime
+        now = datetime.now().strftime("%Y-%m-%d %H:%M")
+        trello_title = f"{now} - {delivery_option} - {customer_name} - {order_channel}"
+
+        import tempfile
+        from urllib.request import urlretrieve
+
+        # Handle fallback: if not custom, download design image from URL
+        main_image_path = None
+        if st.session_state.cake_design == "Cake Custom (แบบอื่นๆ)" and custom_cake_photo:
+            main_image_path = image_path  # your local uploaded image
+        else:
+            design_url = cake_designs.get(st.session_state.cake_design)
+            if design_url:
+                tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+                urlretrieve(design_url, tmp_file.name)
+                main_image_path = tmp_file.name
+
+        # Create Trello card with both main image and reference photos
+        create_trello_card_with_image(
+            api_key=TRELLO_API_KEY,
+            token=TRELLO_TOKEN,
+            list_id=TRELLO_LIST_ID,
+            title=trello_title,
+            description=order_summary,
+            main_image=main_image_path,
+            extra_images=uploaded_photos if uploaded_photos and len(uploaded_photos) > 0 else None
+        )
 
         # ✅ FIX: Send image **only if "Cake Custom (แบบอื่นๆ)" is selected**
         if st.session_state.cake_design == "Cake Custom (แบบอื่นๆ)" and image_path:
@@ -707,4 +737,3 @@ elif st.session_state.cake_type == "เค้กชิ้น 🍰":
 
         # ✅ Send CSV to Telegram after saving the order
         send_csvcakemini_to_telegram()
-        
