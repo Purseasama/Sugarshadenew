@@ -4,7 +4,46 @@ import os
 import requests
 from PIL import Image
 import csv
+import requests
 
+# Trello credentials
+TRELLO_API_KEY = st.secrets["TRELLO_API_KEY"]
+TRELLO_TOKEN = st.secrets["TRELLO_TOKEN"]
+TRELLO_LIST_ID = "6788e230bfdafa8cb62ad43c"
+
+def create_trello_card_with_image(api_key, token, list_id, title, description, main_image=None, extra_images=None):
+    # Create card
+    create_url = "https://api.trello.com/1/cards"
+    query = {
+        'key': api_key,
+        'token': token,
+        'idList': list_id,
+        'name': title,
+        'desc': description
+    }
+    response = requests.post(create_url, params=query)
+    if response.status_code != 200:
+        return False
+
+    card_id = response.json()['id']
+
+    # Attach main image (design or custom)
+    if main_image:
+        with open(main_image, 'rb') as f:
+            files = {'file': f}
+            attach_url = f"https://api.trello.com/1/cards/{card_id}/attachments"
+            attach_query = {'key': api_key, 'token': token}
+            requests.post(attach_url, files=files, params=attach_query)
+
+    # Attach reference photos (if any)
+    if extra_images:
+        for photo in extra_images:
+            attach_url = f"https://api.trello.com/1/cards/{card_id}/attachments"
+            attach_query = {'key': api_key, 'token': token}
+            files = {'file': (photo.name, photo.getbuffer())}
+            requests.post(attach_url, files=files, params=attach_query)
+
+    return card_id
 
 # Telegram token and ID
 TELEGRAM_BOT_TOKEN = "7886819703:AAGYLfxKsaY9TVYg9kwUyj2qAB-JBiIVcTE"
