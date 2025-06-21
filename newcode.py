@@ -46,8 +46,8 @@ def create_trello_card_with_image(api_key, token, list_id, title, description, m
     return card_id
 
 # Telegram token and ID
-TELEGRAM_BOT_TOKEN = "7886819703:AAGYLfxKsaY9TVYg9kwUyj2qAB-JBiIVcTE"
-TELEGRAM_CHAT_ID = "7897964568"
+TELEGRAM_BOT_TOKEN = st.secrets["TELEGRAM_BOT_TOKEN"]
+TELEGRAM_CHAT_ID = st.secrets["TELEGRAM_CHAT_ID"]
 
 # File path for order storage
 ordercakepond_file = "orderscakepond.csv"
