@@ -501,7 +501,8 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     else:
         receiver_name = customer_name
         receiver_phone = phone_number
-   
+
+    from datetime import datetime
     if st.button("✅ ยืนยันคำสั่งซื้อ"):
         st.markdown(
     """
@@ -512,6 +513,9 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     """,
     unsafe_allow_html=True
 )
+        #Add timestamp
+        timestamp = datetime.now().strftime("%d/%m/%y")
+
         # Determine selected cake image for display
         selected_cake_image = cake_designs.get(st.session_state.cake_design, None)
 
@@ -529,6 +533,7 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     💌 K.{customer_name} 
     - เบอร์โทร: {phone_number}
     - ช่องทางสั่ง : {order_channel}
+    - วันที่สั่งซื้อ: {timestamp}
 
     🎂 ประเภทเค้ก: {st.session_state.cake_type}
     - 🎨 แบบเค้ก: {st.session_state.cake_design}
@@ -546,7 +551,7 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     - มีดตัดเค้ก : {cake_knife}
 
     🚗 ข้อมูลการจัดส่ง
-    - วันรับเค้ก: {delivery_date}
+    - วันรับเค้ก: {delivery_date.strftime('%d/%m/%y')} ({delivery_date.strftime('%A')})
     - เวลา: {delivery_time}
     - วิธีจัดส่ง: {delivery_option}
     - สถานที่รับ: {delivery_location}
@@ -569,10 +574,9 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
         if selected_cake_image:
             st.image(selected_cake_image, caption="🎂 ดีไซน์เค้กที่เลือก", use_container_width=True)
         
-        # Determine Trello card title
-        from datetime import datetime
-        now = datetime.now().strftime("%Y-%m-%d %H:%M")
-        trello_title = f"{now} - {delivery_option} - {customer_name} - {order_channel}"
+        # Format delivery date and time for Trello card title
+        delivery_datetime_str = f"{delivery_date.strftime('%d/%m/%y')}-{delivery_time.strftime('%H.%M')}"
+        trello_title = f"{delivery_datetime_str}-{delivery_option}-{customer_name}-{order_channel}"
 
         import tempfile
         from urllib.request import urlretrieve
