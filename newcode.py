@@ -401,7 +401,7 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
         ice_bag = st.radio("ถุงเก็บความเย็น + ice pack (ใบละ 15 บาท):", ["รับ", "❌ไม่รับ"])
         
     with col2:
-        candle_image = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/ice_bag.jpg"
+        candle_image = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/icebag.jpg"
         st.image(ice_bag, use_container_width=True)
 
     # Selecting candle
