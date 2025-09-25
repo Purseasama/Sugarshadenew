@@ -233,7 +233,7 @@ st.markdown(
 st.markdown("<div class='box'><span class='title'>🎂 ประเภทเค้ก</span></div>", unsafe_allow_html=True)
 
 # Create layout with two big buttons
-col1, col2 = st.columns(2)
+col1, _ = st.columns(2)
 
 # Function to update selection
 def select_cake(cake):
@@ -248,13 +248,7 @@ with col1:
     ):
         select_cake("เค้กปอนด์ 🎂")
 
-with col2:
-    if st.button(
-        "🍰 เค้กชิ้น",
-        key="slice_cake",
-        use_container_width=True,
-    ):
-        select_cake("เค้กชิ้น 🍰")
+
 
 # Apply JavaScript for dynamic styling
 if st.session_state.cake_type:
@@ -379,9 +373,9 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     if st.session_state.cake_design:
         st.write(f" **แบบเค้ก:** {st.session_state.cake_design}")
         cake_base = st.selectbox("เนื้อเค้ก:", ["วานิลลา", "ช็อคโกแลต"])
-        cake_filling = st.selectbox("ไส้:", ["🍓 สตรอเบอร์รี่", "🍫 ช็อคโกแลต", "🫐 บลูเบอร์รี่", "🍯 คาราเมล"])
-        cake_size = st.selectbox("ขนาด:", ["0.5 ปอนด์", "1 ปอนด์", "1.5 ปอนด์"])
-        cake_color_options = ["ชมพู", "ฟ้า", "ขาว", "ดำ", "ม่วง", "สีอื่นๆโปรดระบุ"]
+        cake_filling = st.selectbox("ไส้:", ["🍓 สตรอเบอร์รี่", "🍫 ช็อคโกแลต"])
+        cake_size = st.selectbox("ขนาด:", ["0.25 ปอนด์","0.5 ปอนด์", "1 ปอนด์", "1.5 ปอนด์", "2 ปอนด์"])
+        cake_color_options = ["ชมพู", "ฟ้า", "ขาว", "ดำ", "ม่วง", "ตามแบบที่แนบ","สีอื่นๆโปรดระบุ"]
         cake_color_choice = st.selectbox("สีเค้ก:", cake_color_options)
         if cake_color_choice == "สีอื่นๆโปรดระบุ":
             custom_cake_color = st.text_input("สีอื่นๆ")
@@ -404,7 +398,7 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     st.markdown("<div class='box'><span class='title'>🕯️เทียน </span></div>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        candle_type = st.radio("เทียน (แท่งละ 10 บาท):", ["เทียนเกลียว", "เทียนสั้นสีชมพู", "ไม่รับเทียน"])
+        candle_type = st.radio("เทียน (แท่งละ 10 บาท):", ["เทียนเกลียว", "เทียนสั้นสีชมพู", "❌ไม่รับเทียน"])
         num_candles = st.slider("จำนวน (แท่ง):", min_value=1, max_value=10, value=1) if candle_type != "ไม่รับเทียน" else 0
     with col2:
         candle_image = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/candlesnew.jpg"
@@ -414,7 +408,7 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     st.markdown("<div class='box'><span class='title'>💌การ์ด </span></div>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        card_type = st.radio("การ์ด (ใบละ 15 บาท):", ["รับ", "ไม่รับ"])
+        card_type = st.radio("การ์ดเขียนมือ (ใบละ 10 บาท):", ["รับ", "❌ไม่รับ"])
     if card_type == "รับ":
         card_text = st.text_input("ข้อความบนการ์ด:")
     else:
@@ -427,7 +421,7 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     st.markdown("<div class='box'><span class='title'>🧨ไม้ขีดไฟ </span></div>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        match_box = st.radio("ไม้ขีดไฟ (กล่องละ 15 บาท):", ["รับ", "ไม่รับ"])
+        match_box = st.radio("ไม้ขีดไฟ (กล่องละ 15 บาท):", ["รับ", "❌ไม่รับ"])
     with col2:
         matchbox_image = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/matchboxnew.jpg"
         st.image(matchbox_image, use_container_width=True)
@@ -436,7 +430,7 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     st.markdown("<div class='box'><span class='title'>🔪มีดตัดเค้ก</span></div>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        cake_knife = st.radio("มีดตัดเค้ก (อันละ 10 บาท):", ["รับ", "ไม่รับ"])
+        cake_knife = st.radio("มีดตัดเค้ก (อันละ 10 บาท):", ["รับ", "❌ไม่รับ"])
     with col2:
         cakeknife_image = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/cakeknife.jpg"
         st.image(cakeknife_image, use_container_width=True)
@@ -447,8 +441,8 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     st.image(delivery_image, use_container_width=True)
 
     delivery_date = st.date_input("วันรับเค้ก")
-    delivery_time = st.time_input("เวลารับเค้ก")
-    st.caption("เวลาที่ใส่คือเวลาที่เค้กจะถึงมือลูกค้า โดยอาจคลาดเคลื่อน ±30 นาทีขึ้นอยู่กับการจราจรและไรเดอร์ค่ะ")
+    delivery_time = st.time_input("เวลาส่งเค้ก")
+    st.caption("เวลาที่ระบุคือเวลาที่ออกจากร้าน โปรดเช็คระยะทางและเวลาเดินทาง")
     delivery_option = st.radio("วิธีส่ง:", ["มารับเอง", "รถมอเตอร์ไซต์", "รถยนต์"])
     
     if delivery_option == "มารับเอง":
