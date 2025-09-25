@@ -395,11 +395,14 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
                 st.image(photo, caption=photo.name, use_container_width=True)
 
 # Selecting package
-    st.markdown("<div class='box'><span class='title'> 🧊🛍️ ถุงเก็บความเย็น </span></div>", unsafe_allow_html=True)
-    col1,_ = st.columns(2)
+    st.markdown("<div class='box'><span class='title'> 🧊 ถุงเก็บความเย็น </span></div>", unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
     with col1:
-        ice_bag = st.radio("ถุงเก็บความเย็น + ice pack (ใบละ 15 บาท):", ["รับ", "❌ไม่รับ"])
-
+        ice_bag = st.radio("ถุงเก็บความเย็นและไอซ์แพค (ถุงละ 15 บาท):", ["รับ", "❌ไม่รับ"])
+    with col2:
+        icebag_image = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/icebag.jpg"
+        st.image(icebag_image, use_container_width=True)
+        
     # Selecting candle
     st.markdown("<div class='box'><span class='title'>🕯️เทียน </span></div>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
