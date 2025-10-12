@@ -5,12 +5,32 @@ import requests
 from PIL import Image
 import csv
 import requests
+import time, hmac, hashlib, uuid, json, re
+from urllib.parse import urlparse
 
 # Trello credentials
 TRELLO_API_KEY = st.secrets["TRELLO_API_KEY"]
 TRELLO_TOKEN = st.secrets["TRELLO_TOKEN"]
 TRELLO_LIST_ID = "6788e230bfdafa8cb62ad43c"
 
+# Lalamove credentials
+LALAMOVE_API_KEY = st.secrets["LALAMOVE_API_KEY"]
+LALAMOVE_API_SECRET = st.secrets["LALAMOVE_API_SECRET"]
+country = "TH"
+base_url = "https://rest.sandbox.lalamove.com"
+
+# Telegram token and ID
+TELEGRAM_BOT_TOKEN = st.secrets["TELEGRAM_BOT_TOKEN"]
+TELEGRAM_CHAT_ID = st.secrets["TELEGRAM_CHAT_ID"]
+
+# Cake shop details
+SHOP_NAME  = "Sugar Shade"
+SHOP_PHONE = "083-753-4373"
+SHOP_ADDR  = "เทอดไท 77, กรุงเทพมหานคร"
+SHOP_LAT   = 13.709679
+SHOP_LNG   = 100.441462
+
+# Trello function
 def create_trello_card_with_image(api_key, token, list_id, title, description, main_image=None, extra_images=None):
     # Create card
     create_url = "https://api.trello.com/1/cards"
@@ -45,109 +65,59 @@ def create_trello_card_with_image(api_key, token, list_id, title, description, m
 
     return card_id
 
-# Telegram token and ID
-TELEGRAM_BOT_TOKEN = st.secrets["TELEGRAM_BOT_TOKEN"]
-TELEGRAM_CHAT_ID = st.secrets["TELEGRAM_CHAT_ID"]
+# Lalamove function
 
-# File path for order storage
-ordercakepond_file = "orderscakepond.csv"
-ordercakemini_file = "orderscakemini.csv"
+def _now_ms(): return str(int(time.time()*1000))
 
-# ✅ Function to Save Order to CSV cake pond
-def save_ordercakepond_to_csv(ordercakepond_data):
-    file_exists = os.path.isfile(ordercakepond_file)
+def _build_signature(secret, method, url, body, ts_ms):
+    parsed = urlparse(url)
+    path = parsed.path
+    payload = json.dumps(body, separators=(",", ":")) if body else ""
+    to_sign = f"{ts_ms}\r\n{method.upper()}\r\n{path}\r\n{payload}"
+    return hmac.new(secret.encode("utf-8"), to_sign.encode("utf-8"), hashlib.sha256).hexdigest()
 
-    with open(ordercakepond_file, mode="a", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file)
-
-        # Write headers if file does not exist
-        if not file_exists:
-            writer.writerow([
-                "Customer Name", "Phone", "Order Channel", "Cake Type", "Cake Design",
-                "Cake Base", "Cake Filling", "Cake Size", "Cake Color", "Cake Text", "Specification",
-                "Candle Type", "Number of Candles", "Card Type", "Card Text", "Match Box",
-                "Delivery Date", "Delivery Time", "Delivery Option", "Delivery Location"
-            ])
-        
-        # Append order details
-        writer.writerow(ordercakepond_data)
-
-# ✅ Function to Save Order to CSV cake mini
-def save_ordercakemini_to_csv(ordercakemini_data):
-    file_exists = os.path.isfile(ordercakemini_file)
-
-    with open(ordercakemini_file, mode="a", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file)
-
-        # Write headers if file does not exist
-        if not file_exists:
-            writer.writerow([
-                "Customer Name", "Phone", "Order Channel", "Cake Type", "Number of pieces",
-                "Flavor", "Packing option","Candle Type", "Number of Candles", "Card Type", 
-                "Card Text", "Match Box","Delivery Date", "Delivery Time", "Delivery Option",
-                "Delivery Location"
-            ])
-        
-        # Append order details
-        writer.writerow(ordercakemini_data)
-
-# ✅ Function to Send CSV to Telegram cakepond
-def send_csvcakepond_to_telegram():
-    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendDocument"
-    
-    with open(ordercakepond_file, "rb") as file:
-        response = requests.post(telegram_url, data={"chat_id": TELEGRAM_CHAT_ID}, files={"document": file})
-    
-    print(response.json())
-
-
-# ✅ Function to Send CSV to Telegram cakemini
-def send_csvcakemini_to_telegram():
-    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendDocument"
-    
-    with open(ordercakemini_file, "rb") as file:
-        response = requests.post(telegram_url, data={"chat_id": TELEGRAM_CHAT_ID}, files={"document": file})
-    
-    print(response.json())
-
-# Function to send telegram massage and photo
-def send_telegram_message(message):
-    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    telegram_payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
-    
-    response = requests.post(telegram_url, json=telegram_payload)
-    print(response.json())  # Debugging output
-
-def send_telegram_photo(message, image_path):
-    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    telegram_payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
-    
-    # Send text first
-    requests.post(telegram_url, json=telegram_payload)
-
-    # Send image
-    if image_path:
-        telegram_photo_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
-        with open(image_path, "rb") as photo:
-            files = {"photo": photo}
-            requests.post(telegram_photo_url, data={"chat_id": TELEGRAM_CHAT_ID}, files=files)
-def send_telegram_photo_file(photo_file, caption=None):
-    telegram_photo_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
-    files = {
-        "photo": (photo_file.name, photo_file, photo_file.type)
+def _headers(method, url, body):
+    ts = _now_ms()
+    sig = _build_signature(LALAMOVE_API_SECRET, method, url, body, ts)
+    return {
+        "Content-Type": "application/json; charset=UTF-8",
+        "Accept": "application/json",
+        "X-Request-ID": str(uuid.uuid4()),
+        "X-LLM-Country": LALAMOVE_COUNTRY,
+        "Authorization": f"hmac {LALAMOVE_API_KEY}:{ts}:{sig}",
     }
-    data = {"chat_id": TELEGRAM_CHAT_ID}
-    if caption:
-        data["caption"] = caption
-    response = requests.post(telegram_photo_url, data=data, files=files)
-    return response
 
-def send_uploaded_photos_to_telegram(uploaded_photos):
-    for photo in uploaded_photos:
-        caption = f"📎 เรฟ: {photo.name}"
-        response = send_telegram_photo_file(photo, caption)
-        if response.status_code != 200:
-            st.warning(f"❗ ไม่สามารถส่งรูป {photo.name} ไปยัง Telegram ได้: {response.text}")
+def lalamove_request(method, path, body=None):
+    url = f"{LALAMOVE_BASE_URL}{path}"
+    resp = requests.request(method, url, headers=_headers(method, url, body),
+                            data=json.dumps(body) if body else None, timeout=30)
+    try:
+        data = resp.json()
+    except Exception:
+        resp.raise_for_status()
+        return None
+    if not resp.ok:
+        raise RuntimeError(json.dumps({"status": resp.status_code, "error": data}, ensure_ascii=False))
+    return data
+
+def lalamove_get_quotation(stops, service_type, schedule_type="ASAP", pickup_iso=None):
+    payload = {
+        "serviceType": service_type,
+        "stops": stops,
+        "schedule": {"type": schedule_type, **({"pickupTime": pickup_iso} if pickup_iso else {})},
+    }
+    return lalamove_request("POST", "/v3/quotations", payload)
+
+def parse_coords_from_text(text: str):
+    if not text: return (None, None)
+    m = re.search(r"(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)", text)
+    return (float(m.group(1)), float(m.group(2))) if m else (None, None)
+
+def choose_service_type(delivery_option: str, cake_size: str):
+    if delivery_option == "รถมอเตอร์ไซต์":
+        return "MOTORCYCLE"
+    return "CAR"  # default
+
 
 
 # LOGO
@@ -558,14 +528,6 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     - ผู้รับ : {receiver_name} {receiver_phone}
      """  
 
-        # Save Order data cakepond
-        ordercakepond_data = [
-            customer_name, phone_number, order_channel, st.session_state.cake_type, st.session_state.cake_design,
-            cake_base, cake_filling, cake_size, cake_color, cake_text, cake_specification,
-            candle_type, num_candles, card_type, card_text, match_box,cake_knife,
-            delivery_date, delivery_time, delivery_option, delivery_location
-        ]
-        save_ordercakepond_to_csv(ordercakepond_data)
 
         # ✅ Show Order Summary in Streamlit
         st.success(order_summary)
@@ -603,15 +565,5 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
             extra_images=uploaded_photos if uploaded_photos and len(uploaded_photos) > 0 else None
         )
 
-        # ✅ FIX: Send image **only if "Cake Custom (แบบอื่นๆ)" is selected**
-        if st.session_state.cake_design == "Cake Custom (แบบอื่นๆ)" and image_path:
-            send_telegram_photo(order_summary, image_path)  # Send local file
-        else:
-            send_telegram_message(order_summary)  # Send text only 
 
-        if uploaded_photos:
-            st.image(uploaded_photos, caption=[f"เรฟ {photo.name}" for photo in uploaded_photos], use_container_width=True)
-            send_uploaded_photos_to_telegram(uploaded_photos)
 
-        # ✅ Send CSV to Telegram after saving the order
-        send_csvcakepond_to_telegram()
