@@ -7,7 +7,6 @@ import csv
 import requests
 import time, hmac, hashlib, uuid, json, re
 from urllib.parse import urlparse
-st.write("Secrets currently loaded:", list(st.secrets.keys()))
 
 # Trello credentials
 TRELLO_API_KEY = st.secrets["TRELLO_API_KEY"]
@@ -376,7 +375,7 @@ if st.session_state.cake_type == "เค้กปอนด์ 🎂":
     col1, col2 = st.columns(2)
     with col1:
         candle_type = st.radio("เทียน (แท่งละ 10 บาท):", ["เทียนเกลียว", "เทียนสั้นสีชมพู", "❌ไม่รับเทียน"])
-        num_candles = st.slider("จำนวน (แท่ง):", min_value=1, max_value=10, value=1) if candle_type != "ไม่รับเทียน" else 0
+        num_candles = st.slider("จำนวน (แท่ง):", min_value=0, max_value=10, value=1) if candle_type != "ไม่รับเทียน" else 0
     with col2:
         candle_image = "https://raw.githubusercontent.com/Purseasama/Sugarshadenew/main/candlesnew.jpg"
         st.image(candle_image, use_container_width=True)
