@@ -7,6 +7,7 @@ import csv
 import requests
 import time, hmac, hashlib, uuid, json, re
 from urllib.parse import urlparse
+st.write("Secrets currently loaded:", list(st.secrets.keys()))
 
 # Trello credentials
 TRELLO_API_KEY = st.secrets["TRELLO_API_KEY"]
@@ -19,9 +20,6 @@ LALAMOVE_API_SECRET = st.secrets["LALAMOVE_API_SECRET"]
 country = "TH"
 base_url = "https://rest.sandbox.lalamove.com"
 
-# Telegram token and ID
-TELEGRAM_BOT_TOKEN = st.secrets["TELEGRAM_BOT_TOKEN"]
-TELEGRAM_CHAT_ID = st.secrets["TELEGRAM_CHAT_ID"]
 
 # Cake shop details
 SHOP_NAME  = "Sugar Shade"
